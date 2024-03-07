@@ -65,7 +65,7 @@ afterEvaluate{
             create<MavenPublication>("selecta"){
                 from(components["release"])
 
-                groupId="com.github.<GitHub_User_Name>"
+                groupId="com.github.lokified"
                 artifactId = "SelectaCompose"
                 version = "1.0.0"
             }
