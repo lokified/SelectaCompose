@@ -17,7 +17,6 @@ package com.loki.selecta
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,6 +36,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,23 +58,27 @@ data class SelectaListState <T>(
     val list: List<T>,
     val lazyListState: LazyListState,
     val selectedItems: (List<T>) -> Unit,
-    val selectedCount: (Int) -> Unit,
+    val selectedCount: Int
 )
 
 @Composable
 fun <T> rememberSelectaListState(
     list: List<T>,
-    selectedItems: (List<T>) -> Unit,
-    selectedCount: (Int) -> Unit
+    lazyListState: LazyListState = rememberLazyListState(),
+    selectedItems: (List<T>) -> Unit
 ): SelectaListState<T> {
-    val lazyListState = rememberLazyListState()
 
-    return remember(list, selectedItems, selectedCount) {
+    var count by remember { mutableStateOf(0) }
+
+    return remember(list, count) {
         SelectaListState(
             list = list,
-            lazyListState = lazyListState,
-            selectedItems = selectedItems,
-            selectedCount = selectedCount
+            lazyListState = derivedStateOf { lazyListState }.value,
+            selectedItems = {
+                count = it.size
+                selectedItems(it)
+            },
+            selectedCount = count
         )
     }
 }
@@ -92,7 +96,7 @@ fun <T> LazyColumnSelecta(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyItemScope.(T) -> Unit
+    itemContent: @Composable LazyItemScope.(index:Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
@@ -103,15 +107,15 @@ fun <T> LazyColumnSelecta(
         isPressedList.add(false)
     }
 
-    if (isPressedList.toList().isNotEmpty()) {
+    if (isActive) {
         BackHandler {
             isPressedList.clear()
             selectedItems.clear()
             isActive = false
             selectaState.selectedItems(emptyList())
-            selectaState.selectedCount(selectedItems.size)
         }
     }
+
 
     LazyColumn(
         modifier = modifier,
@@ -132,8 +136,7 @@ fun <T> LazyColumnSelecta(
                     isActive = true
                     isPressedList[index] = true
                     selectedItems.add(selectaState.list[index])
-                    selectaState.selectedItems(emptyList())
-                    selectaState.selectedCount(selectedItems.size)
+                    selectaState.selectedItems(selectedItems.toList())
                 },
                 onTap = {
                     if (isPressedList.contains(true)) {
@@ -146,8 +149,7 @@ fun <T> LazyColumnSelecta(
                             isPressedList[index] = true
                             selectedItems.add(selectaState.list[index])
                         }
-                         selectaState.selectedItems(emptyList())
-                        selectaState.selectedCount(selectedItems.size)
+                         selectaState.selectedItems(selectedItems.toList())
                     }
 
                     if (selectedItems.toList().isEmpty()) {
@@ -167,8 +169,7 @@ fun <T> LazyColumnSelecta(
                     if (selectedItems.toList().isEmpty()) {
                         isActive = false
                     }
-                    selectaState.selectedItems(emptyList())
-                    selectaState.selectedCount(selectedItems.size)
+                    selectaState.selectedItems(selectedItems.toList())
                 },
                 modifier = Modifier,
                 selectaItemColors = selectaItemColors,
@@ -176,7 +177,7 @@ fun <T> LazyColumnSelecta(
                 selectaItemPadding = selectaPadding,
                 selectaPosition = selectaPosition
             ) {
-                itemContent(item)
+                itemContent(index, item)
             }
         }
     }
@@ -199,7 +200,7 @@ private fun SelectaListItemContainer(
 
     val itemWeight by animateFloatAsState(
         targetValue = if (isPressed) .9f else 1f,
-        animationSpec = tween(easing = EaseInCubic),
+        animationSpec = tween(easing = EaseInOut),
         label = "item weight"
     )
 
@@ -235,7 +236,6 @@ private fun SelectaListItemContainer(
             if (isActive && selectaPosition == Position.START) {
                 SelectaCheckbox(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .weight(.1f),
                     isPressed = isPressed,
                     onCheckedChange = onCheckedChange,
@@ -255,7 +255,6 @@ private fun SelectaListItemContainer(
             if (isActive && selectaPosition == Position.END) {
                 SelectaCheckbox(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .weight(.1f),
                     isPressed = isPressed,
                     onCheckedChange = onCheckedChange,

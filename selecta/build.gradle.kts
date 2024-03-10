@@ -67,7 +67,7 @@ afterEvaluate{
 
                 groupId="com.github.lokified"
                 artifactId = "SelectaCompose"
-                version = "1.0.0"
+                version = "1.0.2"
             }
         }
     }

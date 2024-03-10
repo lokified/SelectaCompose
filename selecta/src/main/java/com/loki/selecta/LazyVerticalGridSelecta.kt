@@ -37,15 +37,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.loki.selecta.utils.Position
 import com.loki.selecta.utils.SelectaDefaults
 import com.loki.selecta.utils.SelectaItemColors
 import com.loki.selecta.utils.SelectaItemPadding
@@ -55,23 +59,26 @@ data class SelectaLazyGridState <T>(
     val list: List<T>,
     val lazyGridState: LazyGridState,
     val selectedItems: (List<T>) -> Unit,
-    val selectedCount: (Int) -> Unit,
+    val selectedCount: Int
 )
 
 @Composable
 fun <T> rememberSelectaLazyGridState(
     list: List<T>,
-    selectedItems: (List<T>) -> Unit,
-    selectedCount: (Int) -> Unit
+    lazyGridState: LazyGridState = rememberLazyGridState(),
+    selectedItems: (List<T>) -> Unit
 ): SelectaLazyGridState<T> {
-    val lazyGridState = rememberLazyGridState()
+    var count by remember { mutableStateOf(0) }
 
-    return remember(list, selectedItems, selectedCount) {
+    return remember(list, count) {
         SelectaLazyGridState(
             list = list,
-            lazyGridState = lazyGridState,
-            selectedItems = selectedItems,
-            selectedCount = selectedCount
+            lazyGridState = derivedStateOf { lazyGridState }.value,
+            selectedItems = {
+                count = it.size
+                selectedItems(it)
+            },
+            selectedCount = count
         )
     }
 }
@@ -84,28 +91,30 @@ fun <T> LazyVerticalGridSelecta(
     selectaItemColors: SelectaItemColors = SelectaDefaults.colors(),
     selectaShape: SelectaItemShape = SelectaDefaults.shape(),
     selectaPadding: SelectaItemPadding = SelectaDefaults.padding(),
+    position: Position,
     columns: GridCells = GridCells.Fixed(2),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyGridItemScope.(T) -> Unit
+    itemContent: @Composable LazyGridItemScope.(index: Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
     val isPressedList = remember { mutableStateListOf<Boolean>() }
+    var isActive by remember { mutableStateOf(false) }
 
     repeat(selectaState.list.size) {
         isPressedList.add(false)
     }
 
-    if (isPressedList.toList().isNotEmpty()) {
+    if (isActive) {
         BackHandler {
             isPressedList.clear()
             selectedItems.clear()
+            isActive = false
             selectaState.selectedItems(emptyList())
-            selectaState.selectedCount(selectedItems.size)
         }
     }
 
@@ -125,10 +134,10 @@ fun <T> LazyVerticalGridSelecta(
             SelectaGridItemContainer(
                 isPressed = isSelected,
                 onLongPressed = {
+                    isActive = true
                     isPressedList[index] = true
                     selectedItems.add(selectaState.list[index])
-                    selectaState.selectedItems(emptyList())
-                    selectaState.selectedCount(selectedItems.size)
+                    selectaState.selectedItems(selectedItems.toList())
                 },
                 onTap = {
                     if (isPressedList.contains(true)) {
@@ -141,17 +150,17 @@ fun <T> LazyVerticalGridSelecta(
                             isPressedList[index] = true
                             selectedItems.add(selectaState.list[index])
                         }
-                        selectaState.selectedItems(emptyList())
-                        selectaState.selectedCount(selectedItems.size)
+                        selectaState.selectedItems(selectedItems.toList())
                     }
                 },
                 modifier = Modifier,
                 selectedIcon = selectaIcon,
                 selectaItemColors = selectaItemColors,
                 selectaShape = selectaShape,
-                selectaItemPadding = selectaPadding
+                selectaItemPadding = selectaPadding,
+                position = position
             ) {
-                itemContent(item)
+                itemContent(index, item)
             }
         }
     }
@@ -168,6 +177,7 @@ private fun SelectaGridItemContainer(
     selectaItemColors: SelectaItemColors,
     selectaShape: SelectaItemShape,
     selectaItemPadding: SelectaItemPadding,
+    position: Position,
     content: @Composable () -> Unit
 ) {
 
@@ -196,6 +206,12 @@ private fun SelectaGridItemContainer(
             }
     ) {
 
+        val alignment = when(position) {
+            Position.TOPSTART -> Alignment.TopStart
+            Position.TOPEND -> Alignment.TopEnd
+            else -> Alignment.TopEnd
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -209,7 +225,7 @@ private fun SelectaGridItemContainer(
                 imageVector = selectedIcon,
                 contentDescription = "check icon",
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
+                    .align(alignment)
                     .padding(selectaItemPadding.iconPadding),
                 tint = selectaItemColors.iconColor
             )

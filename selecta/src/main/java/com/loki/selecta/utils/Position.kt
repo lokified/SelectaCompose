@@ -17,5 +17,7 @@ package com.loki.selecta.utils
 
 enum class Position {
     START,
-    END
+    END,
+    TOPSTART,
+    TOPEND
 }

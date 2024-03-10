@@ -33,10 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -55,14 +52,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             SelectaComposeTheme {
 
-                var selected by remember { mutableStateOf(0) }
+                val selectaListState = rememberSelectaListState(
+                    list = imageText,
+                    selectedItems = {
+                        Log.i("selected ***", it.toString())
+                    }
+                )
+
+                val selectaLazyGridState = rememberSelectaLazyGridState(
+                    list = imageModels,
+                    selectedItems = {
+                        Log.i("selected ***", it.toString())
+                    }
+                )
 
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { },
                             actions = {
-                                Text(text = "$selected items selected")
+                                Text(text = "${selectaListState.selectedCount} selected")
                             }
                         )
                     }
@@ -75,45 +84,27 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
 
-                        val selectaListState = rememberSelectaListState(
-                            list = imageText,
-                            selectedItems = {
-                                Log.i("selected ***", it.toString())
-                            },
-                            selectedCount = {
-                                selected = it
-                            }
-                        )
-
                         LazyColumnSelecta(
                             selectaState = selectaListState,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(16.dp),
                             selectaPosition = Position.START
-                        ) {
+                        ) {  index, item ->
 
                             Column {
-                                Text(text = it.text1 ?: "")
-                                Text(text = it.text2 ?: "")
+                                Text(text = item.text1 ?: "")
+                                Text(text = item.text2 ?: "")
                             }
                         }
 
-                        val selectaLazyGridState = rememberSelectaLazyGridState(
-                            list = imageModels,
-                            selectedItems = {
-                                Log.i("selected ***", it.toString())
-                            },
-                            selectedCount = {
-                                selected = it
-                            }
-                        )
 
 //                        LazyVerticalGridSelecta(
 //                            selectaState = selectaLazyGridState,
 //                            contentPadding = PaddingValues(16.dp),
 //                            horizontalArrangement = Arrangement.spacedBy(8.dp),
 //                            verticalArrangement = Arrangement.spacedBy(8.dp),
-//                        ) { item ->
+//                            position = Position.TOPSTART
+//                        ) { index, item ->
 //
 //                            Column {
 //                                Image(
