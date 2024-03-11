@@ -168,7 +168,7 @@ fun <T> LazyVerticalGridSelecta(
 
 
 @Composable
-private fun SelectaGridItemContainer(
+internal fun SelectaGridItemContainer(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     onLongPressed: () -> Unit,

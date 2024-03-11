@@ -98,24 +98,24 @@ class MainActivity : ComponentActivity() {
                         }
 
 
-//                        LazyVerticalGridSelecta(
-//                            selectaState = selectaLazyGridState,
-//                            contentPadding = PaddingValues(16.dp),
-//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                            verticalArrangement = Arrangement.spacedBy(8.dp),
-//                            position = Position.TOPSTART
-//                        ) { index, item ->
-//
-//                            Column {
-//                                Image(
-//                                    painter = painterResource(id = item.id ?: 0),
-//                                    contentDescription = null,
-//                                    modifier = Modifier.height(150.dp),
-//                                    contentScale = ContentScale.Crop
-//                                )
-//                                Text(text = "tester")
-//                            }
-//                        }
+                        LazyVerticalGridSelecta(
+                            selectaState = selectaLazyGridState,
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            position = Position.TOPSTART
+                        ) { index, item ->
+
+                            Column {
+                                Image(
+                                    painter = painterResource(id = item.id ?: 0),
+                                    contentDescription = null,
+                                    modifier = Modifier.height(150.dp),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Text(text = "tester")
+                            }
+                        }
                     }
                 }
             }

@@ -184,7 +184,7 @@ fun <T> LazyColumnSelecta(
 }
 
 @Composable
-private fun SelectaListItemContainer(
+internal fun SelectaListItemContainer(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     isActive: Boolean,
@@ -266,7 +266,7 @@ private fun SelectaListItemContainer(
 }
 
 @Composable
-private fun SelectaCheckbox(
+internal fun SelectaCheckbox(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     onCheckedChange: (Boolean) -> Unit,
