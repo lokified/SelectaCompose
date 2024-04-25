@@ -36,7 +36,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,32 +53,20 @@ import com.loki.selecta.utils.SelectaItemColors
 import com.loki.selecta.utils.SelectaItemPadding
 import com.loki.selecta.utils.SelectaItemShape
 
-data class SelectaListState <T>(
-    val list: List<T>,
-    val lazyListState: LazyListState,
-    val selectedItems: (List<T>) -> Unit,
-    val selectedCount: Int
-)
-
+/**
+ * Creates and remembers a [SelectaListState] for managing the selection state of a list of items.
+ *
+ * @param list The list of items to manage the selection state for.
+ * @param lazyListState Optional [LazyListState] to control the scrolling behavior of the list. If not provided, a default [LazyListState] will be used.
+ * @return An instance of [SelectaListState] initialized with the provided list and optional [lazyListState].
+ */
 @Composable
 fun <T> rememberSelectaListState(
     list: List<T>,
-    lazyListState: LazyListState = rememberLazyListState(),
-    selectedItems: (List<T>) -> Unit
+    lazyListState: LazyListState = rememberLazyListState()
 ): SelectaListState<T> {
-
-    var count by remember { mutableStateOf(0) }
-
-    return remember(list, count) {
-        SelectaListState(
-            list = list,
-            lazyListState = derivedStateOf { lazyListState }.value,
-            selectedItems = {
-                count = it.size
-                selectedItems(it)
-            },
-            selectedCount = count
-        )
+    return remember(list) {
+        SelectaState(list, lazyListState)
     }
 }
 
@@ -96,7 +83,7 @@ fun <T> LazyColumnSelecta(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyItemScope.(index:Int, item: T) -> Unit
+    itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
@@ -149,7 +136,7 @@ fun <T> LazyColumnSelecta(
                             isPressedList[index] = true
                             selectedItems.add(selectaState.list[index])
                         }
-                         selectaState.selectedItems(selectedItems.toList())
+                        selectaState.selectedItems(selectedItems.toList())
                     }
 
                     if (selectedItems.toList().isEmpty()) {
@@ -171,7 +158,6 @@ fun <T> LazyColumnSelecta(
                     }
                     selectaState.selectedItems(selectedItems.toList())
                 },
-                modifier = Modifier,
                 selectaItemColors = selectaItemColors,
                 selectaShape = selectaShape,
                 selectaItemPadding = selectaPadding,

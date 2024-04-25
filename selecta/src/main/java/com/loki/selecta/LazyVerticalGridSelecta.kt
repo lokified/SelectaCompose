@@ -37,7 +37,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,30 +54,23 @@ import com.loki.selecta.utils.SelectaItemColors
 import com.loki.selecta.utils.SelectaItemPadding
 import com.loki.selecta.utils.SelectaItemShape
 
-data class SelectaLazyGridState <T>(
-    val list: List<T>,
-    val lazyGridState: LazyGridState,
-    val selectedItems: (List<T>) -> Unit,
-    val selectedCount: Int
-)
 
+/**
+ * Creates and remembers a [SelectaLazyGridState] for managing the selection state of a grid of items.
+ *
+ * @param list The list of items to manage the selection state for.
+ * @param lazyGridState Optional [LazyGridState] to control the scrolling behavior of the grid. If not provided, a default [LazyGridState] will be used.
+ * @return An instance of [SelectaLazyGridState] initialized with the provided list and optional [lazyGridState].
+ */
 @Composable
 fun <T> rememberSelectaLazyGridState(
     list: List<T>,
-    lazyGridState: LazyGridState = rememberLazyGridState(),
-    selectedItems: (List<T>) -> Unit
+    lazyGridState: LazyGridState = rememberLazyGridState()
 ): SelectaLazyGridState<T> {
-    var count by remember { mutableStateOf(0) }
-
-    return remember(list, count) {
-        SelectaLazyGridState(
-            list = list,
-            lazyGridState = derivedStateOf { lazyGridState }.value,
-            selectedItems = {
-                count = it.size
-                selectedItems(it)
-            },
-            selectedCount = count
+    return remember(list) {
+        SelectaState(
+            l = list,
+            lg = lazyGridState
         )
     }
 }
@@ -91,7 +83,7 @@ fun <T> LazyVerticalGridSelecta(
     selectaItemColors: SelectaItemColors = SelectaDefaults.colors(),
     selectaShape: SelectaItemShape = SelectaDefaults.shape(),
     selectaPadding: SelectaItemPadding = SelectaDefaults.padding(),
-    position: Position,
+    selectaPosition: Position,
     columns: GridCells = GridCells.Fixed(2),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
@@ -158,7 +150,7 @@ fun <T> LazyVerticalGridSelecta(
                 selectaItemColors = selectaItemColors,
                 selectaShape = selectaShape,
                 selectaItemPadding = selectaPadding,
-                position = position
+                position = selectaPosition
             ) {
                 itemContent(index, item)
             }
@@ -206,7 +198,7 @@ internal fun SelectaGridItemContainer(
             }
     ) {
 
-        val alignment = when(position) {
+        val alignment = when (position) {
             Position.TOPSTART -> Alignment.TopStart
             Position.TOPEND -> Alignment.TopEnd
             else -> Alignment.TopEnd
