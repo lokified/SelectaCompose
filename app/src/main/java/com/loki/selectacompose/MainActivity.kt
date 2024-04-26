@@ -78,23 +78,23 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
 
-                        LazyColumnSelecta(
-                            selectaState = selectaListState,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(16.dp),
-                            selectaPosition = Position.START
-                        ) { _, item ->
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                Column {
-                                    Text(text = item.text1 ?: "")
-                                    Text(text = item.text2 ?: "")
-                                }
-                            }
-                        }
+//                        LazyColumnSelecta(
+//                            selectaState = selectaListState,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp),
+//                            contentPadding = PaddingValues(16.dp),
+//                            selectaPosition = Position.START
+//                        ) { _, item ->
+//
+//                            Box(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                            ) {
+//                                Column {
+//                                    Text(text = item.text1 ?: "")
+//                                    Text(text = item.text2 ?: "")
+//                                }
+//                            }
+//                        }
 
 
                         LazyVerticalGridSelecta(

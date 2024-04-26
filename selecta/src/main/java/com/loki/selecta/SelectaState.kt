@@ -6,8 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 
 interface BaseSelectaState<T> {
     val list: List<T>
-    val selectedItems: (List<T>) -> Unit
+    val selectedItems: List<T>
     val selectedCount: Int
+    fun updateSelectedList(updateList: List<T>)
 }
 
 interface SelectaListState<T> : BaseSelectaState<T> {
@@ -36,7 +37,7 @@ class SelectaState<T>() : SelectaListState<T>, SelectaLazyGridState<T> {
         this.lg = lg
     }
 
-    private var count = mutableStateOf(0)
+    private var updatedSelectedList = mutableStateOf<List<T>>(emptyList())
 
     override val list: List<T>
         get() = l
@@ -47,9 +48,13 @@ class SelectaState<T>() : SelectaListState<T>, SelectaLazyGridState<T> {
     override val lazyGridState: LazyGridState
         get() = lg!!
 
-    override val selectedItems: (List<T>) -> Unit
-        get() = { count.value = it.size }
+    override val selectedItems: List<T>
+        get() = updatedSelectedList.value
 
     override val selectedCount: Int
-        get() = count.value
+        get() = updatedSelectedList.value.size
+
+    override fun updateSelectedList(updateList: List<T>) {
+        updatedSelectedList.value = updateList
+    }
 }

@@ -99,7 +99,7 @@ fun <T> LazyColumnSelecta(
             isPressedList.clear()
             selectedItems.clear()
             isActive = false
-            selectaState.selectedItems(emptyList())
+            selectaState.updateSelectedList(emptyList())
         }
     }
 
@@ -123,7 +123,7 @@ fun <T> LazyColumnSelecta(
                     isActive = true
                     isPressedList[index] = true
                     selectedItems.add(selectaState.list[index])
-                    selectaState.selectedItems(selectedItems.toList())
+                    selectaState.updateSelectedList(selectedItems.toList())
                 },
                 onTap = {
                     if (isPressedList.contains(true)) {
@@ -136,7 +136,7 @@ fun <T> LazyColumnSelecta(
                             isPressedList[index] = true
                             selectedItems.add(selectaState.list[index])
                         }
-                        selectaState.selectedItems(selectedItems.toList())
+                        selectaState.updateSelectedList(selectedItems.toList())
                     }
 
                     if (selectedItems.toList().isEmpty()) {
@@ -156,7 +156,7 @@ fun <T> LazyColumnSelecta(
                     if (selectedItems.toList().isEmpty()) {
                         isActive = false
                     }
-                    selectaState.selectedItems(selectedItems.toList())
+                    selectaState.updateSelectedList(selectedItems.toList())
                 },
                 selectaItemColors = selectaItemColors,
                 selectaShape = selectaShape,
