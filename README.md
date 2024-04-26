@@ -44,9 +44,6 @@ This is created as shown below. You can also provide your own `LazyListState`.
 ```kotlin
 val selectaListState = rememberSelectaListState(
    list = // list goes here,
-   selectedItems = {
-      // returns selected list
-   }
 )
 
 
@@ -58,6 +55,10 @@ LazyColumnSelecta(
 ) {  index, item ->
    // your composable goes here
 }
+
+// to get states use;
+selectaListState.selectedItems // returns a list of selected items.
+selectaListState.selectedCount // returns the number of selected items.
 ```
 
 For `LazyVerticalGrid` use `LazyVerticalGridSelecta` which takes all parameters except `LazyGridState` where you are required to create a `SelectaLazyGridState`. 
@@ -65,10 +66,7 @@ This is created as shown below. You can also provide your own `LazyGridState`.
 
 ```kotlin
 val selectaLazyGridState = rememberSelectaLazyGridState(
-   list = // list goes here,
-   selectedItems = {
-      // returns selected list
-   }
+   list = // list goes here
 )
 
 
@@ -77,9 +75,28 @@ LazyVerticalGridSelecta(
    contentPadding = PaddingValues(16.dp),
    horizontalArrangement = Arrangement.spacedBy(8.dp),
    verticalArrangement = Arrangement.spacedBy(8.dp),
-   position = Position.TOPSTART
+   selectaPosition = Position.TOPSTART
 ) {  index, item ->
    // your composable goes here
+}
+
+// to get states use;
+selectaLazyGridState.selectedItems // returns a list of selected items.
+selectaLazyGridState.selectedCount // returns the number of selected items.
+```
+#### Clickable Item
+To implement a clickabble item don't add clickable modifier to your parent item composable. Instead use `SelectaItem` as shown below. Usable in all Selecta composables.
+```kotlin
+LazyColumnSelecta(
+  selectaState = selectaListState
+) { _, item ->
+  SelectaItem (
+      onClick = {
+        // implement your clickable here
+      }
+  ) {        
+    // place your composable item here
+  }
 }
 ```
 
@@ -110,8 +127,9 @@ To style the selecta container you can override the following in the composables
    ```
 
    ## Contributing
+   Want to contribute? fork  the repo and open pull request.
 
-   Open an issue or contact [Twitter](https://twitter.com/_sheldonO)
+   Have an issue? contact [Twitter](https://twitter.com/_sheldonO)
 
    ## License
 
