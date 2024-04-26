@@ -41,6 +41,9 @@ dependencies {
 For `LazyColumn` use `LazyColumnSelecta` which takes all parameters except `LazyListState` where you are required to create a `SelectaListState`. 
 This is created as shown below. You can also provide your own `LazyListState`.
 
+
+https://github.com/lokified/SelectaCompose/assets/87479198/ea0103ce-4000-45c9-b3d6-3f8466d635b3
+
 ```kotlin
 val selectaListState = rememberSelectaListState(
    list = // list goes here,
@@ -63,6 +66,9 @@ selectaListState.selectedCount // returns the number of selected items.
 
 For `LazyVerticalGrid` use `LazyVerticalGridSelecta` which takes all parameters except `LazyGridState` where you are required to create a `SelectaLazyGridState`. 
 This is created as shown below. You can also provide your own `LazyGridState`.
+
+https://github.com/lokified/SelectaCompose/assets/87479198/e1106650-8ec2-41b8-b285-cfa59ea178c3
+
 
 ```kotlin
 val selectaLazyGridState = rememberSelectaLazyGridState(
