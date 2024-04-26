@@ -16,6 +16,7 @@
 package com.loki.selectacompose
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.loki.selecta.LazyColumnSelecta
@@ -51,6 +53,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SelectaComposeTheme {
+
+                val context = LocalContext.current
 
                 val selectaListState = rememberSelectaListState(
                     list = imageText
@@ -78,24 +82,33 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
 
-//                        LazyColumnSelecta(
-//                            selectaState = selectaListState,
-//                            verticalArrangement = Arrangement.spacedBy(8.dp),
-//                            contentPadding = PaddingValues(16.dp),
-//                            selectaPosition = Position.START
-//                        ) { _, item ->
-//
-//                            Box(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                            ) {
-//                                Column {
-//                                    Text(text = item.text1 ?: "")
-//                                    Text(text = item.text2 ?: "")
-//                                }
-//                            }
-//                        }
+                        LazyColumnSelecta(
+                            selectaState = selectaListState,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            selectaPosition = Position.START
+                        ) { _, item ->
 
+                            SelectaItem (
+                                onClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "${item.text1} SelectaItem",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Column {
+                                        Text(text = item.text1 ?: "")
+                                        Text(text = item.text2 ?: "")
+                                    }
+                                }
+                            }
+                        }
 
                         LazyVerticalGridSelecta(
                             selectaState = selectaLazyGridState,
@@ -103,16 +116,26 @@ class MainActivity : ComponentActivity() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             selectaPosition = Position.TOPSTART
-                        ) { _, item ->
+                        ) { index, item ->
 
-                            Column {
-                                Image(
-                                    painter = painterResource(id = item.id ?: 0),
-                                    contentDescription = null,
-                                    modifier = Modifier.height(150.dp),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Text(text = "tester")
+                            SelectaItem(
+                                onClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "$index item",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            ) {
+                                Column {
+                                    Image(
+                                        painter = painterResource(id = item.id ?: 0),
+                                        contentDescription = null,
+                                        modifier = Modifier.height(150.dp),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Text(text = "tester")
+                                }
                             }
                         }
                     }

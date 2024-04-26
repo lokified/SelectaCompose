@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -83,7 +82,7 @@ fun <T> LazyColumnSelecta(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
+    itemContent: @Composable SelectaItemScope.(index: Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
@@ -115,7 +114,10 @@ fun <T> LazyColumnSelecta(
     ) {
 
         itemsIndexed(selectaState.list) { index, item ->
+
+            val clickableScope = remember { SelectaItemScopeImpl() }
             val isSelected = isPressedList[index]
+
             SelectaListItemContainer(
                 isPressed = isSelected,
                 isActive = isActive,
@@ -126,6 +128,10 @@ fun <T> LazyColumnSelecta(
                     selectaState.updateSelectedList(selectedItems.toList())
                 },
                 onTap = {
+                    if (!isActive) {
+                        clickableScope.performClickAction()
+                    }
+
                     if (isPressedList.contains(true)) {
                         if (isPressedList[index]) {
                             // Deselect the item
@@ -163,14 +169,14 @@ fun <T> LazyColumnSelecta(
                 selectaItemPadding = selectaPadding,
                 selectaPosition = selectaPosition
             ) {
-                itemContent(index, item)
+                itemContent(clickableScope, index, item)
             }
         }
     }
 }
 
 @Composable
-internal fun SelectaListItemContainer(
+private fun SelectaListItemContainer(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     isActive: Boolean,
@@ -252,7 +258,7 @@ internal fun SelectaListItemContainer(
 }
 
 @Composable
-internal fun SelectaCheckbox(
+private fun SelectaCheckbox(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     onCheckedChange: (Boolean) -> Unit,

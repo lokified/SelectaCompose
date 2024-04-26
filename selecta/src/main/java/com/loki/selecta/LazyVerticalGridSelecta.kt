@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -90,7 +89,7 @@ fun <T> LazyVerticalGridSelecta(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyGridItemScope.(index: Int, item: T) -> Unit
+    itemContent: @Composable SelectaItemScope.(index: Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
@@ -122,7 +121,10 @@ fun <T> LazyVerticalGridSelecta(
     ) {
 
         itemsIndexed(selectaState.list) { index, item ->
+
+            val clickableScope = remember { SelectaItemScopeImpl() }
             val isSelected = isPressedList[index]
+
             SelectaGridItemContainer(
                 isPressed = isSelected,
                 onLongPressed = {
@@ -132,6 +134,11 @@ fun <T> LazyVerticalGridSelecta(
                     selectaState.updateSelectedList(selectedItems.toList())
                 },
                 onTap = {
+
+                    if (!isActive) {
+                        clickableScope.performClickAction()
+                    }
+
                     if (isPressedList.contains(true)) {
                         if (isPressedList[index]) {
                             // Deselect the item
@@ -144,6 +151,10 @@ fun <T> LazyVerticalGridSelecta(
                         }
                         selectaState.updateSelectedList(selectedItems.toList())
                     }
+
+                    if (selectedItems.toList().isEmpty()) {
+                        isActive = false
+                    }
                 },
                 modifier = Modifier,
                 selectedIcon = selectaIcon,
@@ -152,7 +163,7 @@ fun <T> LazyVerticalGridSelecta(
                 selectaItemPadding = selectaPadding,
                 position = selectaPosition
             ) {
-                itemContent(index, item)
+                itemContent(clickableScope, index, item)
             }
         }
     }
@@ -160,7 +171,7 @@ fun <T> LazyVerticalGridSelecta(
 
 
 @Composable
-internal fun SelectaGridItemContainer(
+private fun SelectaGridItemContainer(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     onLongPressed: () -> Unit,
