@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -37,7 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,30 +53,23 @@ import com.loki.selecta.utils.SelectaItemColors
 import com.loki.selecta.utils.SelectaItemPadding
 import com.loki.selecta.utils.SelectaItemShape
 
-data class SelectaLazyGridState <T>(
-    val list: List<T>,
-    val lazyGridState: LazyGridState,
-    val selectedItems: (List<T>) -> Unit,
-    val selectedCount: Int
-)
 
+/**
+ * Creates and remembers a [SelectaLazyGridState] for managing the selection state of a grid of items.
+ *
+ * @param list The list of items to manage the selection state for.
+ * @param lazyGridState Optional [LazyGridState] to control the scrolling behavior of the grid. If not provided, a default [LazyGridState] will be used.
+ * @return An instance of [SelectaLazyGridState] initialized with the provided list and optional [lazyGridState].
+ */
 @Composable
 fun <T> rememberSelectaLazyGridState(
     list: List<T>,
-    lazyGridState: LazyGridState = rememberLazyGridState(),
-    selectedItems: (List<T>) -> Unit
+    lazyGridState: LazyGridState = rememberLazyGridState()
 ): SelectaLazyGridState<T> {
-    var count by remember { mutableStateOf(0) }
-
-    return remember(list, count) {
-        SelectaLazyGridState(
-            list = list,
-            lazyGridState = derivedStateOf { lazyGridState }.value,
-            selectedItems = {
-                count = it.size
-                selectedItems(it)
-            },
-            selectedCount = count
+    return remember(list) {
+        SelectaState(
+            l = list,
+            lg = lazyGridState
         )
     }
 }
@@ -91,14 +82,14 @@ fun <T> LazyVerticalGridSelecta(
     selectaItemColors: SelectaItemColors = SelectaDefaults.colors(),
     selectaShape: SelectaItemShape = SelectaDefaults.shape(),
     selectaPadding: SelectaItemPadding = SelectaDefaults.padding(),
-    position: Position,
+    selectaPosition: Position,
     columns: GridCells = GridCells.Fixed(2),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     userScrollEnabled: Boolean = true,
-    itemContent: @Composable LazyGridItemScope.(index: Int, item: T) -> Unit
+    itemContent: @Composable SelectaItemScope.(index: Int, item: T) -> Unit
 ) {
 
     val selectedItems = remember { mutableStateListOf<T>() }
@@ -114,7 +105,7 @@ fun <T> LazyVerticalGridSelecta(
             isPressedList.clear()
             selectedItems.clear()
             isActive = false
-            selectaState.selectedItems(emptyList())
+            selectaState.updateSelectedList(emptyList())
         }
     }
 
@@ -130,16 +121,24 @@ fun <T> LazyVerticalGridSelecta(
     ) {
 
         itemsIndexed(selectaState.list) { index, item ->
+
+            val clickableScope = remember { SelectaItemScopeImpl() }
             val isSelected = isPressedList[index]
+
             SelectaGridItemContainer(
                 isPressed = isSelected,
                 onLongPressed = {
                     isActive = true
                     isPressedList[index] = true
                     selectedItems.add(selectaState.list[index])
-                    selectaState.selectedItems(selectedItems.toList())
+                    selectaState.updateSelectedList(selectedItems.toList())
                 },
                 onTap = {
+
+                    if (!isActive) {
+                        clickableScope.performClickAction()
+                    }
+
                     if (isPressedList.contains(true)) {
                         if (isPressedList[index]) {
                             // Deselect the item
@@ -150,7 +149,11 @@ fun <T> LazyVerticalGridSelecta(
                             isPressedList[index] = true
                             selectedItems.add(selectaState.list[index])
                         }
-                        selectaState.selectedItems(selectedItems.toList())
+                        selectaState.updateSelectedList(selectedItems.toList())
+                    }
+
+                    if (selectedItems.toList().isEmpty()) {
+                        isActive = false
                     }
                 },
                 modifier = Modifier,
@@ -158,9 +161,9 @@ fun <T> LazyVerticalGridSelecta(
                 selectaItemColors = selectaItemColors,
                 selectaShape = selectaShape,
                 selectaItemPadding = selectaPadding,
-                position = position
+                position = selectaPosition
             ) {
-                itemContent(index, item)
+                itemContent(clickableScope, index, item)
             }
         }
     }
@@ -168,7 +171,7 @@ fun <T> LazyVerticalGridSelecta(
 
 
 @Composable
-internal fun SelectaGridItemContainer(
+private fun SelectaGridItemContainer(
     modifier: Modifier = Modifier,
     isPressed: Boolean,
     onLongPressed: () -> Unit,
@@ -206,7 +209,7 @@ internal fun SelectaGridItemContainer(
             }
     ) {
 
-        val alignment = when(position) {
+        val alignment = when (position) {
             Position.TOPSTART -> Alignment.TopStart
             Position.TOPEND -> Alignment.TopEnd
             else -> Alignment.TopEnd

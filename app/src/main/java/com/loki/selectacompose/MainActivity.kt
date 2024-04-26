@@ -16,15 +16,17 @@
 package com.loki.selectacompose
 
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,9 +35,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.loki.selecta.LazyColumnSelecta
@@ -52,18 +54,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             SelectaComposeTheme {
 
+                val context = LocalContext.current
+
                 val selectaListState = rememberSelectaListState(
-                    list = imageText,
-                    selectedItems = {
-                        Log.i("selected ***", it.toString())
-                    }
+                    list = imageText
                 )
 
                 val selectaLazyGridState = rememberSelectaLazyGridState(
-                    list = imageModels,
-                    selectedItems = {
-                        Log.i("selected ***", it.toString())
-                    }
+                    list = imageModels
                 )
 
                 Scaffold(
@@ -71,7 +69,7 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = { },
                             actions = {
-                                Text(text = "${selectaListState.selectedCount} selected")
+                                Text(text = "${selectaLazyGridState.selectedCount} selected")
                             }
                         )
                     }
@@ -89,31 +87,55 @@ class MainActivity : ComponentActivity() {
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(16.dp),
                             selectaPosition = Position.START
-                        ) {  index, item ->
+                        ) { _, item ->
 
-                            Column {
-                                Text(text = item.text1 ?: "")
-                                Text(text = item.text2 ?: "")
+                            SelectaItem (
+                                onClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "${item.text1} SelectaItem",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Column {
+                                        Text(text = item.text1 ?: "")
+                                        Text(text = item.text2 ?: "")
+                                    }
+                                }
                             }
                         }
-
 
                         LazyVerticalGridSelecta(
                             selectaState = selectaLazyGridState,
                             contentPadding = PaddingValues(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            position = Position.TOPSTART
+                            selectaPosition = Position.TOPSTART
                         ) { index, item ->
 
-                            Column {
-                                Image(
-                                    painter = painterResource(id = item.id ?: 0),
-                                    contentDescription = null,
-                                    modifier = Modifier.height(150.dp),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Text(text = "tester")
+                            SelectaItem(
+                                onClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "$index item",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            ) {
+                                Column {
+                                    Image(
+                                        painter = painterResource(id = item.id ?: 0),
+                                        contentDescription = null,
+                                        modifier = Modifier.height(150.dp),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Text(text = "tester")
+                                }
                             }
                         }
                     }
